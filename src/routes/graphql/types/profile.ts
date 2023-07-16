@@ -26,7 +26,7 @@ export const ProfileType = new GraphQLObjectType({
     },
     user: {
       type: new GraphQLNonNull(UserType),
-      description: "an user (relation to User)"
+      description: 'an user (relation to User)',
     },
     userId: {
       type: new GraphQLNonNull(UUIDType),
