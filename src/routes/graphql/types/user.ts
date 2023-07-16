@@ -1,4 +1,10 @@
-import { GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
+import {
+  GraphQLFloat,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLString,
+} from 'graphql';
 import { UUIDType } from './uuid.js';
 import { ProfileType } from './profile.js';
 import { SubscribersOnAuthorsType } from './subscribers.js';
@@ -14,6 +20,10 @@ export const UserType = new GraphQLObjectType({
     name: {
       type: new GraphQLNonNull(GraphQLString),
       description: 'name of an user',
+    },
+    balance: {
+      type: new GraphQLNonNull(GraphQLFloat),
+      description: 'balance of an user',
     },
     profile: {
       type: new GraphQLNonNull(ProfileType),
