@@ -7,6 +7,7 @@ import {
   GraphQLString,
 } from 'graphql';
 import { ProfileType } from './profile.js';
+import { FastifyInstance } from 'fastify';
 
 export const MemberTypeType = new GraphQLObjectType({
   name: 'MemberType',
@@ -25,7 +26,14 @@ export const MemberTypeType = new GraphQLObjectType({
     },
     profiles: {
       type: new GraphQLList(ProfileType),
-      description: 'list of profiles associated with the member type',
+      description: 'list of profiles associated with a member type',
+      resolve: async ({ id }, _args, context: FastifyInstance) => {
+        return context.prisma.profile.findMany({
+          where: {
+            memberTypeId: id as string,
+          },
+        });
+      },
     },
   }),
 });

@@ -1,13 +1,19 @@
 import { GraphQLNonNull, GraphQLObjectType } from 'graphql';
 import { UUIDType } from './uuid.js';
 import { UserType } from './user.js';
+import { FastifyInstance } from 'fastify';
 
 export const SubscribersOnAuthorsType = new GraphQLObjectType({
   name: 'SubscribersOnAuthors',
   fields: () => ({
-    subsriber: {
+    subscriber: {
       type: new GraphQLNonNull(UserType),
       description: 'subscriber profile (relation to User)',
+      resolve: async ({ subscriberId }, _args, context: FastifyInstance) => {
+        return context.prisma.user.findUnique({
+          where: { id: subscriberId as string },
+        });
+      },
     },
     subscriberId: {
       type: new GraphQLNonNull(UUIDType),
@@ -16,6 +22,11 @@ export const SubscribersOnAuthorsType = new GraphQLObjectType({
     author: {
       type: new GraphQLNonNull(UserType),
       description: 'author profile (relation to User)',
+      resolve: async ({ authorId }, _args, context: FastifyInstance) => {
+        return context.prisma.user.findUnique({
+          where: { id: authorId as string },
+        });
+      },
     },
     authorId: {
       type: new GraphQLNonNull(UUIDType),

@@ -1,6 +1,7 @@
 import { GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
 import { UUIDType } from './uuid.js';
 import { UserType } from './user.js';
+import { FastifyInstance } from 'fastify';
 
 export const PostType = new GraphQLObjectType({
   name: 'Post',
@@ -20,6 +21,13 @@ export const PostType = new GraphQLObjectType({
     author: {
       type: new GraphQLNonNull(UserType),
       description: 'an user created a post (relation to User)',
+      resolve: async ({ authorId }, args, context: FastifyInstance) => {
+        return context.prisma.user.findUnique({
+          where: {
+            id: authorId as string,
+          },
+        });
+      },
     },
     authorId: {
       type: new GraphQLNonNull(UUIDType),
