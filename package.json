@@ -15,8 +15,6 @@
     "seed": "ts-node --esm prisma/seed.ts"
   },
   "scripts": {
-    "format": "prettier --write ./src",
-    "lint": "eslint ./src",
     "test-integrity": "node integrity.cjs",
     "test-queries": "npm run build:ts && tap --ts \"test/routes/gql-queries.test.ts\"",
     "test-mutations": "npm run build:ts && tap --ts \"test/routes/gql-mutations.test.ts\"",
