@@ -1,19 +1,31 @@
 import {
+  GraphQLEnumType,
   GraphQLFloat,
   GraphQLInt,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-  GraphQLString,
 } from 'graphql';
 import { ProfileType } from './profile.js';
 import { FastifyInstance } from 'fastify';
+
+export const MemberTypeId = new GraphQLEnumType({
+  name: 'MemberTypeId',
+  values: {
+    basic: {
+      value: 'basic',
+    },
+    business: {
+      value: 'business',
+    },
+  },
+});
 
 export const MemberTypeType = new GraphQLObjectType({
   name: 'MemberType',
   fields: () => ({
     id: {
-      type: new GraphQLNonNull(GraphQLString),
+      type: new GraphQLNonNull(MemberTypeId),
       description: 'id of a member type',
     },
     discount: {

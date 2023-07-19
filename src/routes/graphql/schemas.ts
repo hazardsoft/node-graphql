@@ -1,11 +1,6 @@
 import { Type } from '@fastify/type-provider-typebox';
-import {
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLObjectType,
-  GraphQLSchema,
-} from 'graphql';
-import { MemberTypeType } from './types/memberType.js';
+import { GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLSchema } from 'graphql';
+import { MemberTypeId, MemberTypeType } from './types/memberType.js';
 import { FastifyInstance } from 'fastify';
 import { ProfileType } from './types/profile.js';
 import { PostType } from './types/post.js';
@@ -44,7 +39,7 @@ const query = new GraphQLObjectType({
       type: MemberTypeType,
       args: {
         id: {
-          type: new GraphQLNonNull(UUIDType),
+          type: new GraphQLNonNull(MemberTypeId),
         },
       },
       resolve: async (_source, { id: memberTypeId }, context: FastifyInstance) => {

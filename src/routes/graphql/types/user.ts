@@ -49,23 +49,31 @@ export const UserType = new GraphQLObjectType({
       },
     },
     userSubscribedTo: {
-      type: new GraphQLList(SubscribersOnAuthorsType),
-      description: "an user's posts",
-      resolve: async ({ id: userId }, _args, context: FastifyInstance) => {
-        return context.prisma.subscribersOnAuthors.findMany({
+      type: new GraphQLList(UserType),
+      description: 'list of users current user is subscribed to',
+      resolve: async ({ id }, _args, context: FastifyInstance) => {
+        return context.prisma.user.findMany({
           where: {
-            subscriberId: userId as string,
+            subscribedToUser: {
+              some: {
+                subscriberId: id as string,
+              },
+            },
           },
         });
       },
     },
     subscribedToUser: {
-      type: new GraphQLList(SubscribersOnAuthorsType),
-      description: "an user's posts",
-      resolve: async ({ id: userId }, _args, context: FastifyInstance) => {
-        return context.prisma.subscribersOnAuthors.findMany({
+      type: new GraphQLList(UserType),
+      description: 'list of users subscribed to the current user',
+      resolve: async ({ id }, _args, context: FastifyInstance) => {
+        return context.prisma.user.findMany({
           where: {
-            authorId: userId as string,
+            userSubscribedTo: {
+              some: {
+                authorId: id as string,
+              },
+            },
           },
         });
       },
