@@ -32,6 +32,48 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       // const mutation = 'mutation {deleteProfile(id: "95d970d1-7fd9-4518-acfe-d2a27b5d8d37"){id userId memberTypeId memberType{id discount}}}';
       // const mutation = 'mutation {deleteUser(id: "71d7b515-a5b8-4257-ba01-689d3961fb41"){id name balance posts{title content} profile{userId yearOfBirth}}}'
 
+      /* const mutation = 'mutation($input: PostInputType!) {createPost(input: $input){id authorId title content}}';
+      const vars = {
+        input: {
+          authorId: '4e063b4c-a691-42e8-84ec-9e6bc78b9155',
+          title: '2nd post: title',
+          content: '2nd post: content',
+        },
+      }; */
+
+      /* const mutation = 'mutation($input: ProfileInputType!) {createProfile(input: $input){id isMale yearOfBirth userId user{id name balance} memberTypeId memberType{id discount}}}';
+      const vars = {
+        input: {
+          userId: '29045088-c39b-4b0b-961c-645085f28a7e',
+          isMale: true,
+          yearOfBirth: 2023,
+          memberTypeId: "basic"
+        },
+      }; */
+
+      /* const mutation =
+        'mutation($input: UserInputType!) {createUser(input: $input){id name balance}}';
+      const vars = {
+        input: {
+          name: 'Henadzi Shutko input',
+          balance: 5.5,
+        },
+      }; */
+
+      /* const mutation =
+        'mutation($userId: String!, $authorId: String!) {createSubscription(userId: $userId, authorId: $authorId){id name balance}}';
+      const vars = {
+        userId: '5ae7360f-1f1a-4aee-9124-c308bf210b1f',
+        authorId: '48aaff6f-adb7-4cdb-9089-e00d9c2cf42a',
+      }; */
+
+      /* const mutation =
+        'mutation($userId: String!, $authorId: String!) {deleteSubscription(userId: $userId, authorId: $authorId){authorId subscriberId}}';
+      const vars = {
+        userId: '5ae7360f-1f1a-4aee-9124-c308bf210b1f',
+        authorId: '48aaff6f-adb7-4cdb-9089-e00d9c2cf42a',
+      }; */
+
       const query = req.body.query;
       const vars = req.body.variables;
 

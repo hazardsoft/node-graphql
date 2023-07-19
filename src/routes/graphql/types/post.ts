@@ -1,4 +1,9 @@
-import { GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql';
+import {
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLString,
+  GraphQLInputObjectType,
+} from 'graphql';
 import { UUIDType } from './uuid.js';
 import { UserType } from './user.js';
 import { FastifyInstance } from 'fastify';
@@ -32,6 +37,21 @@ export const PostType = new GraphQLObjectType({
     authorId: {
       type: new GraphQLNonNull(UUIDType),
       description: 'id of an user created a post (relation to User)',
+    },
+  }),
+});
+
+export const PostInputType = new GraphQLInputObjectType({
+  name: 'PostInputType',
+  fields: () => ({
+    authorId: {
+      type: new GraphQLNonNull(UUIDType),
+    },
+    title: {
+      type: new GraphQLNonNull(GraphQLString),
+    },
+    content: {
+      type: new GraphQLNonNull(GraphQLString),
     },
   }),
 });

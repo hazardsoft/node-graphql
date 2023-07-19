@@ -1,5 +1,6 @@
 import {
   GraphQLBoolean,
+  GraphQLInputObjectType,
   GraphQLInt,
   GraphQLNonNull,
   GraphQLObjectType,
@@ -7,7 +8,7 @@ import {
 } from 'graphql';
 import { FastifyInstance } from 'fastify';
 import { UUIDType } from './uuid.js';
-import { MemberTypeType } from './memberType.js';
+import { MemberTypeId, MemberTypeType } from './memberType.js';
 import { UserType } from './user.js';
 
 export const ProfileType = new GraphQLObjectType({
@@ -18,11 +19,11 @@ export const ProfileType = new GraphQLObjectType({
       description: 'id of a profile',
     },
     isMale: {
-      type: GraphQLBoolean,
+      type: new GraphQLNonNull(GraphQLBoolean),
       description: 'if an user is a male',
     },
     yearOfBirth: {
-      type: GraphQLInt,
+      type: new GraphQLNonNull(GraphQLInt),
       description: 'an user birth year',
     },
     user: {
@@ -52,8 +53,26 @@ export const ProfileType = new GraphQLObjectType({
       },
     },
     memberTypeId: {
-      type: new GraphQLNonNull(GraphQLString),
+      type: new GraphQLNonNull(MemberTypeId),
       description: 'id of a member type (relation to MemberType)',
+    },
+  }),
+});
+
+export const ProfileInputType = new GraphQLInputObjectType({
+  name: 'ProfileInputType',
+  fields: () => ({
+    userId: {
+      type: new GraphQLNonNull(UUIDType),
+    },
+    isMale: {
+      type: new GraphQLNonNull(GraphQLBoolean),
+    },
+    yearOfBirth: {
+      type: new GraphQLNonNull(GraphQLInt),
+    },
+    memberTypeId: {
+      type: new GraphQLNonNull(MemberTypeId),
     },
   }),
 });
