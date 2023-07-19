@@ -1,7 +1,9 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { createGqlResponseSchema, gqlResponseSchema } from './schemas.js';
-import { graphql } from 'graphql';
+import { graphql, validate, parse } from 'graphql';
 import { schema } from './schemas.js';
+import { config } from './config.js';
+import depthLimit from 'graphql-depth-limit';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.route({
@@ -13,7 +15,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         200: gqlResponseSchema,
       },
     },
-    async handler(req, res) {
+    async handler(req) {
       // const query = 'query {memberTypes{id discount postsLimitPerMonth}}';
       // const query = 'query {memberType(id: "basic"){id discount postsLimitPerMonth}}';
       // const query = 'query {memberType(id: "basic"){id discount postsLimitPerMonth profiles{id userId memberTypeId memberType{id discount} user{id name}}}}';
@@ -77,13 +79,24 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const query = req.body.query;
       const vars = req.body.variables;
 
-      const result = await graphql({
-        schema,
-        source: query,
-        variableValues: vars,
-        contextValue: this,
-      });
-      return result;
+      try {
+        const depthLimitErrors = validate(schema, parse(query), [
+          depthLimit(config.depthLimit),
+        ]);
+        if (depthLimitErrors && depthLimitErrors.length) {
+          return { data: null, errors: depthLimitErrors };
+        }
+
+        const result = await graphql({
+          schema,
+          source: query,
+          variableValues: vars,
+          contextValue: this,
+        });
+        return result;
+      } catch (e) {
+        return { data: null, errors: [e] };
+      }
     },
   });
 };
