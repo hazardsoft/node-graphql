@@ -4,7 +4,6 @@ import {
   GraphQLInt,
   GraphQLNonNull,
   GraphQLObjectType,
-  GraphQLString,
 } from 'graphql';
 import { FastifyInstance } from 'fastify';
 import { UUIDType } from './uuid.js';
@@ -59,8 +58,8 @@ export const ProfileType = new GraphQLObjectType({
   }),
 });
 
-export const ProfileInputType = new GraphQLInputObjectType({
-  name: 'ProfileInputType',
+export const CreateProfileInput = new GraphQLInputObjectType({
+  name: 'CreateProfileInput',
   fields: () => ({
     userId: {
       type: new GraphQLNonNull(UUIDType),
@@ -73,6 +72,21 @@ export const ProfileInputType = new GraphQLInputObjectType({
     },
     memberTypeId: {
       type: new GraphQLNonNull(MemberTypeId),
+    },
+  }),
+});
+
+export const ChangeProfileInput = new GraphQLInputObjectType({
+  name: 'ChangeProfileInput',
+  fields: () => ({
+    isMale: {
+      type: GraphQLBoolean,
+    },
+    yearOfBirth: {
+      type: GraphQLInt,
+    },
+    memberTypeId: {
+      type: MemberTypeId,
     },
   }),
 });
