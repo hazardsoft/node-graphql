@@ -24,7 +24,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           depthLimit(config.depthLimit),
         ]);
         if (depthLimitErrors && depthLimitErrors.length) {
-          return { data: null, errors: depthLimitErrors };
+          return { errors: depthLimitErrors };
         }
 
         const result = await graphql({
@@ -35,7 +35,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         });
         return result;
       } catch (e) {
-        return { data: null, errors: [e] };
+        return { errors: [e] };
       }
     },
   });
