@@ -11,7 +11,7 @@ import { ProfileType } from './profile.js';
 import { PostType } from './post.js';
 import { FastifyInstance } from 'fastify';
 
-export const UserType = new GraphQLObjectType({
+export const UserType: GraphQLObjectType = new GraphQLObjectType({
   name: 'User',
   fields: () => ({
     id: {
@@ -81,6 +81,13 @@ export const UserType = new GraphQLObjectType({
   }),
 });
 
+export interface CreateUserArgs {
+  dto: {
+    name: string;
+    balance: number;
+  };
+}
+
 export const CreateUserInput = new GraphQLInputObjectType({
   name: 'CreateUserInput',
   fields: () => ({
@@ -92,6 +99,14 @@ export const CreateUserInput = new GraphQLInputObjectType({
     },
   }),
 });
+
+export interface ChangeUserArgs {
+  id: string;
+  dto: {
+    name: string;
+    balance: number;
+  };
+}
 
 export const ChangeUserInput = new GraphQLInputObjectType({
   name: 'ChangeUserInput',

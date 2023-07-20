@@ -10,7 +10,7 @@ import { UUIDType } from './uuid.js';
 import { MemberTypeId, MemberTypeType } from './memberType.js';
 import { UserType } from './user.js';
 
-export const ProfileType = new GraphQLObjectType({
+export const ProfileType: GraphQLObjectType = new GraphQLObjectType({
   name: 'Profile',
   fields: () => ({
     id: {
@@ -28,7 +28,7 @@ export const ProfileType = new GraphQLObjectType({
     user: {
       type: new GraphQLNonNull(UserType),
       description: 'an user (relation to User)',
-      resolve: async ({ userId }, args, context: FastifyInstance) => {
+      resolve: async ({ userId }, _args, context: FastifyInstance) => {
         return context.prisma.user.findUnique({
           where: {
             id: userId as string,
@@ -58,6 +58,15 @@ export const ProfileType = new GraphQLObjectType({
   }),
 });
 
+export interface CreateProfileArgs {
+  dto: {
+    userId: string;
+    isMale: boolean;
+    yearOfBirth: number;
+    memberTypeId: string;
+  };
+}
+
 export const CreateProfileInput = new GraphQLInputObjectType({
   name: 'CreateProfileInput',
   fields: () => ({
@@ -75,6 +84,15 @@ export const CreateProfileInput = new GraphQLInputObjectType({
     },
   }),
 });
+
+export interface ChangeProfileArgs {
+  id: string;
+  dto: {
+    isMale: boolean;
+    yearOfBirth: number;
+    memberTypeId: string;
+  };
+}
 
 export const ChangeProfileInput = new GraphQLInputObjectType({
   name: 'ChangeProfileInput',

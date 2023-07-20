@@ -8,7 +8,7 @@ import { UUIDType } from './uuid.js';
 import { UserType } from './user.js';
 import { FastifyInstance } from 'fastify';
 
-export const PostType = new GraphQLObjectType({
+export const PostType: GraphQLObjectType = new GraphQLObjectType({
   name: 'Post',
   fields: () => ({
     id: {
@@ -41,6 +41,14 @@ export const PostType = new GraphQLObjectType({
   }),
 });
 
+export interface CreatePostArgs {
+  dto: {
+    authorId: string;
+    title: string;
+    content: string;
+  };
+}
+
 export const CreatePostInput = new GraphQLInputObjectType({
   name: 'CreatePostInput',
   fields: () => ({
@@ -55,6 +63,14 @@ export const CreatePostInput = new GraphQLInputObjectType({
     },
   }),
 });
+
+export interface ChangePostArgs {
+  id: string;
+  dto: {
+    title: string;
+    content: string;
+  };
+}
 
 export const ChangePostInput = new GraphQLInputObjectType({
   name: 'ChangePostInput',
