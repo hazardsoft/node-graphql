@@ -9,7 +9,7 @@ import {
 import { UUIDType } from './uuid.js';
 import { ProfileType } from './profile.js';
 import { PostType } from './post.js';
-import { FastifyInstance } from 'fastify';
+import { GraphQLContext } from '../context.js';
 
 export const UserType: GraphQLObjectType = new GraphQLObjectType({
   name: 'User',
@@ -29,28 +29,28 @@ export const UserType: GraphQLObjectType = new GraphQLObjectType({
     profile: {
       type: ProfileType,
       description: "an user's profile",
-      resolve: async ({ id: userId }, _args, context: FastifyInstance) => {
+      resolve: async ({ id: userId }, _args, context: GraphQLContext) => {
         return context.loaders.profilesByUser.load(userId);
       },
     },
     posts: {
       type: new GraphQLList(PostType),
       description: "an user's posts",
-      resolve: async ({ id: userId }, _args, context: FastifyInstance) => {
+      resolve: async ({ id: userId }, _args, context: GraphQLContext) => {
         return context.loaders.postsByUser.load(userId);
       },
     },
     userSubscribedTo: {
       type: new GraphQLList(UserType),
       description: 'list of users current user is subscribed to',
-      resolve: async ({ id }, _args, context: FastifyInstance) => {
+      resolve: async ({ id }, _args, context: GraphQLContext) => {
         return context.loaders.userSubscribedTo.load(id);
       },
     },
     subscribedToUser: {
       type: new GraphQLList(UserType),
       description: 'list of users subscribed to the current user',
-      resolve: async ({ id }, _args, context: FastifyInstance) => {
+      resolve: async ({ id }, _args, context: GraphQLContext) => {
         return context.loaders.subscribedToUser.load(id);
       },
     },

@@ -5,10 +5,10 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
 } from 'graphql';
-import { FastifyInstance } from 'fastify';
 import { UUIDType } from './uuid.js';
 import { MemberTypeId, MemberTypeType } from './memberType.js';
 import { UserType } from './user.js';
+import { GraphQLContext } from '../context.js';
 
 export const ProfileType: GraphQLObjectType = new GraphQLObjectType({
   name: 'Profile',
@@ -28,7 +28,7 @@ export const ProfileType: GraphQLObjectType = new GraphQLObjectType({
     user: {
       type: new GraphQLNonNull(UserType),
       description: 'an user (relation to User)',
-      resolve: async ({ userId }, _args, context: FastifyInstance) => {
+      resolve: async ({ userId }, _args, context: GraphQLContext) => {
         return context.prisma.user.findUnique({
           where: {
             id: userId as string,
@@ -43,7 +43,7 @@ export const ProfileType: GraphQLObjectType = new GraphQLObjectType({
     memberType: {
       type: new GraphQLNonNull(MemberTypeType),
       description: 'member type of an user (relation to MemberType)',
-      resolve: async ({ memberTypeId }, _args, context: FastifyInstance) => {
+      resolve: async ({ memberTypeId }, _args, context: GraphQLContext) => {
         return context.loaders.memberTypes.load(memberTypeId);
       },
     },

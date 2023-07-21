@@ -4,12 +4,12 @@ import { graphql, validate, parse } from 'graphql';
 import { schema } from './schemas.js';
 import { config } from './config.js';
 import depthLimit from 'graphql-depth-limit';
-import { createLoaders, Loaders } from './loaders.js';
+import LoadersClass from './loaders.js';
+import { GraphQLContext } from './context.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { prisma } = fastify;
-  const loaders = createLoaders(prisma);
-  fastify.decorate('loaders', loaders);
+  const loaders = new LoadersClass(prisma);
 
   fastify.route({
     url: '/',
@@ -36,7 +36,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           schema,
           source: query,
           variableValues: vars,
-          contextValue: this,
+          contextValue: <GraphQLContext>{ loaders: loaders.createLoaders(), prisma },
         });
         return result;
       } catch (e) {
@@ -45,11 +45,5 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
   });
 };
-
-declare module 'fastify' {
-  export interface FastifyInstance {
-    loaders: Loaders;
-  }
-}
 
 export default plugin;

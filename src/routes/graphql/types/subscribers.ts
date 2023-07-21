@@ -1,7 +1,7 @@
 import { GraphQLNonNull, GraphQLObjectType } from 'graphql';
 import { UUIDType } from './uuid.js';
 import { UserType } from './user.js';
-import { FastifyInstance } from 'fastify';
+import { GraphQLContext } from '../context.js';
 
 export const SubscribersOnAuthorsType = new GraphQLObjectType({
   name: 'SubscribersOnAuthors',
@@ -9,7 +9,7 @@ export const SubscribersOnAuthorsType = new GraphQLObjectType({
     subscriber: {
       type: new GraphQLNonNull(UserType),
       description: 'subscriber profile (relation to User)',
-      resolve: async ({ subscriberId }, _args, context: FastifyInstance) => {
+      resolve: async ({ subscriberId }, _args, context: GraphQLContext) => {
         return context.prisma.user.findUnique({
           where: { id: subscriberId as string },
         });
@@ -22,7 +22,7 @@ export const SubscribersOnAuthorsType = new GraphQLObjectType({
     author: {
       type: new GraphQLNonNull(UserType),
       description: 'author profile (relation to User)',
-      resolve: async ({ authorId }, _args, context: FastifyInstance) => {
+      resolve: async ({ authorId }, _args, context: GraphQLContext) => {
         return context.prisma.user.findUnique({
           where: { id: authorId as string },
         });

@@ -13,37 +13,43 @@ export type Loaders = {
   subscribedToUser: DataLoader<unknown, unknown, unknown>;
 };
 
-export function createLoaders(prisma: PrismaClient): Loaders {
-  const usersLoader = new DataLoader(async (ids) => {
-    const users = await prisma.user.findMany({
+export default class LoadersClass {
+  private usersBatch = async (ids: readonly string[]) => {
+    const users = await this.prisma.user.findMany({
       where: {
         id: {
           in: ids as string[],
         },
       },
     });
-    if (users.length !== ids.length) {
+    const filledUsers = ids.map((id) => {
+      return users.find((user) => user.id === id);
+    });
+    if (filledUsers.length !== ids.length) {
       throw new Error('users length is different to keys length');
     }
-    return users;
-  });
+    return filledUsers;
+  };
 
-  const profilesLoader = new DataLoader(async (ids) => {
-    const profiles = await prisma.profile.findMany({
+  private profilesBatch = async (ids: readonly string[]) => {
+    const profiles = await this.prisma.profile.findMany({
       where: {
         id: {
           in: ids as string[],
         },
       },
     });
-    if (profiles.length !== ids.length) {
+    const filledProfiles = ids.map((id) => {
+      return profiles.find((profile) => profile.id === id);
+    });
+    if (filledProfiles.length !== ids.length) {
       throw new Error('profiles length is different to keys length');
     }
-    return profiles;
-  });
+    return filledProfiles;
+  };
 
-  const profilesByUserLoader = new DataLoader(async (usersIds) => {
-    const profiles = await prisma.profile.findMany({
+  private profilesByUserBatch = async (usersIds: readonly string[]) => {
+    const profiles = await this.prisma.profile.findMany({
       where: {
         userId: {
           in: usersIds as string[],
@@ -51,33 +57,33 @@ export function createLoaders(prisma: PrismaClient): Loaders {
       },
     });
     const filledProfiles = usersIds.map((userId) => {
-      return (
-        profiles.find((profile) => profile.userId === userId) ??
-        Error(`profile of ${userId as string} not found`)
-      );
+      return profiles.find((profile) => profile.userId === userId);
     });
     if (filledProfiles.length !== usersIds.length) {
       throw new Error('profilesByUser length is different to keys length');
     }
     return filledProfiles;
-  });
+  };
 
-  const postsLoader = new DataLoader(async (ids) => {
-    const posts = await prisma.post.findMany({
+  private postsBatch = async (ids: readonly string[]) => {
+    const posts = await this.prisma.post.findMany({
       where: {
         id: {
           in: ids as string[],
         },
       },
     });
-    if (posts.length !== ids.length) {
+    const filledPosts = ids.map((id) => {
+      return posts.find((post) => post.id === id);
+    });
+    if (filledPosts.length !== ids.length) {
       throw new Error('posts length is different to keys length');
     }
-    return posts;
-  });
+    return filledPosts;
+  };
 
-  const postsByUserLoader = new DataLoader(async (usersIds) => {
-    const posts = await prisma.post.findMany({
+  private postsByUserBatch = async (usersIds: readonly string[]) => {
+    const posts = await this.prisma.post.findMany({
       where: {
         authorId: {
           in: usersIds as string[],
@@ -85,100 +91,112 @@ export function createLoaders(prisma: PrismaClient): Loaders {
       },
     });
     const filledPosts = usersIds.map((userId) => {
-      return (
-        posts.filter((post) => post.authorId === userId) ??
-        Error(`user ${userId as string} not found`)
-      );
+      return posts.filter((post) => post.authorId === userId);
     });
     if (filledPosts.length !== usersIds.length) {
       throw new Error('postsByUserLoader length is different to keys length');
     }
     return filledPosts;
-  });
+  };
 
-  const memberTypesLoader = new DataLoader((ids) => {
-    return prisma.memberType.findMany({
+  private memberTypesBatch = async (ids: readonly string[]) => {
+    return this.prisma.memberType.findMany({
       where: {
         id: {
           in: ids as string[],
         },
       },
     });
-  });
+  };
 
-  const profilesByMemberTypeLoader = new DataLoader(async (ids) => {
-    const profiles = await prisma.profile.findMany({
+  private profilesByMemberTypeBatch = async (ids: readonly string[]) => {
+    const profiles = await this.prisma.profile.findMany({
       where: {
         memberTypeId: { in: ids as string[] },
       },
     });
     const filledProfiles = ids.map((memberTypeId) => {
-      return (
-        profiles.find((profile) => profile.memberTypeId === memberTypeId) ??
-        Error(`profile with ${memberTypeId as string} not found`)
-      );
+      return profiles.find((profile) => profile.memberTypeId === memberTypeId);
     });
     if (filledProfiles.length !== ids.length) {
       throw new Error('profilesByMemberType length is different to keys length');
     }
     return filledProfiles;
-  });
+  };
 
-  const userSubscribedToLoader = new DataLoader(async (usersIds) => {
-    const users = await prisma.user.findMany({
+  private userSubscribedToBatch = async (usersIds: readonly string[]) => {
+    const users = await this.prisma.user.findMany({
       where: {
         subscribedToUser: {
           some: {
-            subscriberId: {
+            subscriberId: { in: usersIds as string[] },
+          },
+        },
+      },
+      include: {
+        subscribedToUser: {
+          select: {
+            subscriberId: true,
+          },
+        },
+      },
+    });
+    const filledUsers = usersIds.map((userId) => {
+      return users.filter((user) =>
+        user.subscribedToUser.some(
+          (subscription) => subscription.subscriberId === userId,
+        ),
+      );
+    });
+    if (filledUsers.length !== usersIds.length) {
+      throw new Error('userSubscribedTo length is different to keys length');
+    }
+    return filledUsers;
+  };
+
+  private subscribedToUserBatch = async (usersIds: readonly string[]) => {
+    const users = await this.prisma.user.findMany({
+      where: {
+        userSubscribedTo: {
+          some: {
+            authorId: {
               in: usersIds as string[],
             },
           },
         },
       },
-    });
-    const filledUsers = usersIds.map((userId) => {
-      return (
-        users.filter((user) => user.id === userId) ??
-        Error(`user ${userId as string} not found`)
-      );
-    });
-    if (filledUsers.length !== usersIds.length) {
-      throw new Error('userSubscribed length is different to keys length');
-    }
-    return filledUsers;
-  });
-
-  const subscribedToUserLoader = new DataLoader(async (usersIds) => {
-    const users = await prisma.user.findMany({
-      where: {
+      include: {
         userSubscribedTo: {
-          some: {
-            authorId: { in: usersIds as string[] },
+          select: {
+            authorId: true,
           },
         },
       },
     });
     const filledUsers = usersIds.map((userId) => {
-      return (
-        users.filter((user) => user.id === userId) ??
-        Error(`user ${userId as string} not found`)
+      return users.filter((user) =>
+        user.userSubscribedTo.some((subscription) => subscription.authorId === userId),
       );
     });
     if (filledUsers.length !== usersIds.length) {
       throw new Error('subscribedToUser length is different to keys length');
     }
     return filledUsers;
-  });
-
-  return {
-    users: usersLoader,
-    profiles: profilesLoader,
-    profilesByMemberType: profilesByMemberTypeLoader,
-    posts: postsLoader,
-    postsByUser: postsByUserLoader,
-    memberTypes: memberTypesLoader,
-    profilesByUser: profilesByUserLoader,
-    userSubscribedTo: userSubscribedToLoader,
-    subscribedToUser: subscribedToUserLoader,
   };
+
+  constructor(private prisma: PrismaClient) {}
+
+  public createLoaders(): Loaders {
+    return {
+      users: new DataLoader(this.usersBatch),
+      profiles: new DataLoader(this.profilesBatch),
+      profilesByUser: new DataLoader(this.profilesByUserBatch),
+      posts: new DataLoader(this.postsBatch),
+      postsByUser: new DataLoader(this.postsByUserBatch),
+      memberTypes: new DataLoader(this.memberTypesBatch),
+      profilesByMemberType: new DataLoader(this.profilesByMemberTypeBatch),
+      userSubscribedTo: new DataLoader(this.userSubscribedToBatch),
+      subscribedToUser: new DataLoader(this.subscribedToUserBatch),
+    };
+  }
 }

@@ -7,7 +7,7 @@ import {
   GraphQLObjectType,
 } from 'graphql';
 import { ProfileType } from './profile.js';
-import { FastifyInstance } from 'fastify';
+import { GraphQLContext } from '../context.js';
 
 export const MemberTypeId = new GraphQLEnumType({
   name: 'MemberTypeId',
@@ -39,7 +39,7 @@ export const MemberTypeType = new GraphQLObjectType({
     profiles: {
       type: new GraphQLList(ProfileType),
       description: 'list of profiles associated with a member type',
-      resolve: async ({ id }, _args, context: FastifyInstance) => {
+      resolve: async ({ id }, _args, context: GraphQLContext) => {
         return context.loaders.profilesByMemberType.load(id);
       },
     },
