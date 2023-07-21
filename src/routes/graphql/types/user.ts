@@ -30,52 +30,28 @@ export const UserType: GraphQLObjectType = new GraphQLObjectType({
       type: ProfileType,
       description: "an user's profile",
       resolve: async ({ id: userId }, _args, context: FastifyInstance) => {
-        return context.prisma.profile.findUnique({
-          where: {
-            userId: userId as string,
-          },
-        });
+        return context.loaders.profilesByUser.load(userId);
       },
     },
     posts: {
       type: new GraphQLList(PostType),
       description: "an user's posts",
       resolve: async ({ id: userId }, _args, context: FastifyInstance) => {
-        return context.prisma.post.findMany({
-          where: {
-            authorId: userId as string,
-          },
-        });
+        return context.loaders.postsByUser.load(userId);
       },
     },
     userSubscribedTo: {
       type: new GraphQLList(UserType),
       description: 'list of users current user is subscribed to',
       resolve: async ({ id }, _args, context: FastifyInstance) => {
-        return context.prisma.user.findMany({
-          where: {
-            subscribedToUser: {
-              some: {
-                subscriberId: id as string,
-              },
-            },
-          },
-        });
+        return context.loaders.userSubscribedTo.load(id);
       },
     },
     subscribedToUser: {
       type: new GraphQLList(UserType),
       description: 'list of users subscribed to the current user',
       resolve: async ({ id }, _args, context: FastifyInstance) => {
-        return context.prisma.user.findMany({
-          where: {
-            userSubscribedTo: {
-              some: {
-                authorId: id as string,
-              },
-            },
-          },
-        });
+        return context.loaders.subscribedToUser.load(id);
       },
     },
   }),

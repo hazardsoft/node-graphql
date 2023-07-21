@@ -23,11 +23,7 @@ export const query = new GraphQLObjectType({
         },
       },
       resolve: async (_source, { id: memberTypeId }, context: FastifyInstance) => {
-        return context.prisma.memberType.findUnique({
-          where: {
-            id: memberTypeId as string,
-          },
-        });
+        return context.loaders.memberTypes.load(memberTypeId);
       },
     },
     profiles: {
@@ -44,11 +40,7 @@ export const query = new GraphQLObjectType({
         },
       },
       resolve: async (_source, { id: profileId }, context: FastifyInstance) => {
-        return context.prisma.profile.findUnique({
-          where: {
-            id: profileId as string,
-          },
-        });
+        return context.loaders.profiles.load(profileId);
       },
     },
     posts: {
@@ -65,11 +57,7 @@ export const query = new GraphQLObjectType({
         },
       },
       resolve: async (_source, { id: postId }, context: FastifyInstance) => {
-        return context.prisma.post.findUnique({
-          where: {
-            id: postId as string,
-          },
-        });
+        return context.loaders.posts.load(postId);
       },
     },
     users: {
@@ -86,11 +74,7 @@ export const query = new GraphQLObjectType({
         },
       },
       resolve: async (_source, { id: userId }, context: FastifyInstance) => {
-        return context.prisma.user.findUnique({
-          where: {
-            id: userId as string,
-          },
-        });
+        return context.loaders.users.load(userId);
       },
     },
   }),
