@@ -40,7 +40,7 @@ export const MemberTypeType = new GraphQLObjectType({
       type: new GraphQLList(ProfileType),
       description: 'list of profiles associated with a member type',
       resolve: async ({ id }, _args, context: GraphQLContext) => {
-        return context.loaders.profilesByMemberType.load(id);
+        return context.loaders.profilesByMemberType.load(id as string);
       },
     },
   }),

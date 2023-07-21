@@ -1,4 +1,9 @@
 import { GraphQLObjectType, GraphQLList, GraphQLNonNull } from 'graphql';
+import {
+  ResolveTree,
+  parseResolveInfo,
+  simplifyParsedResolveInfoFragmentWithType,
+} from 'graphql-parse-resolve-info';
 import { MemberTypeId, MemberTypeType } from './types/memberType.js';
 import { ProfileType } from './types/profile.js';
 import { UUIDType } from './types/uuid.js';
@@ -23,7 +28,7 @@ export const query = new GraphQLObjectType({
         },
       },
       resolve: async (_source, { id: memberTypeId }, context: GraphQLContext) => {
-        return context.loaders.memberTypes.load(memberTypeId);
+        return context.loaders.memberTypes.load(memberTypeId as string);
       },
     },
     profiles: {
@@ -40,7 +45,7 @@ export const query = new GraphQLObjectType({
         },
       },
       resolve: async (_source, { id: profileId }, context: GraphQLContext) => {
-        return context.loaders.profiles.load(profileId);
+        return context.loaders.profiles.load(profileId as string);
       },
     },
     posts: {
@@ -57,13 +62,79 @@ export const query = new GraphQLObjectType({
         },
       },
       resolve: async (_source, { id: postId }, context: GraphQLContext) => {
-        return context.loaders.posts.load(postId);
+        return context.loaders.posts.load(postId as string);
       },
     },
     users: {
       type: new GraphQLList(UserType),
-      resolve: async (_source, _args, context: GraphQLContext) => {
-        return context.prisma.user.findMany();
+      resolve: async (_source, _args, context: GraphQLContext, info) => {
+        const parsedInfo = parseResolveInfo(info) as ResolveTree;
+        const { fields } = simplifyParsedResolveInfoFragmentWithType(
+          parsedInfo,
+          UserType,
+        );
+
+        const includeSubscribedToUser = Boolean(fields['subscribedToUser']);
+        const includeUserSubscribedTo = Boolean(fields['userSubscribedTo']);
+
+        const users = await context.prisma.user.findMany({
+          include: {
+            subscribedToUser: includeSubscribedToUser,
+            userSubscribedTo: includeUserSubscribedTo,
+          },
+        });
+
+        const getSubsTo1 = (userId: string) => {
+          return users.filter((innerUser) =>
+            innerUser.subscribedToUser.some(
+              (subscription) => subscription.subscriberId === userId,
+            ),
+          );
+        };
+
+        const getSubsFrom1 = (userId: string) => {
+          return users.filter((innerUser) =>
+            innerUser.subscribedToUser.some(
+              (subscription) => subscription.authorId === userId,
+            ),
+          );
+        };
+
+        const getSubsTo2 = (userId: string) => {
+          return users.filter((innerUser) =>
+            innerUser.userSubscribedTo.some(
+              (subscription) => subscription.subscriberId === userId,
+            ),
+          );
+        };
+
+        const getSubsFrom2 = (userId: string) => {
+          return users.filter((innerUser) =>
+            innerUser.userSubscribedTo.some(
+              (subscription) => subscription.authorId === userId,
+            ),
+          );
+        };
+
+        if (includeSubscribedToUser) {
+          users.forEach((user) => {
+            const subsTo = getSubsTo1(user.id);
+            const subsFrom = getSubsFrom1(user.id);
+            context.loaders.subscribedToUser.prime(user.id, subsTo);
+            context.loaders.userSubscribedTo.prime(user.id, subsFrom);
+          });
+        }
+
+        if (includeUserSubscribedTo) {
+          users.forEach((user) => {
+            const subsTo = getSubsTo2(user.id);
+            const subsFrom = getSubsFrom2(user.id);
+            context.loaders.subscribedToUser.prime(user.id, subsTo);
+            context.loaders.userSubscribedTo.prime(user.id, subsFrom);
+          });
+        }
+
+        return users;
       },
     },
     user: {
@@ -74,7 +145,7 @@ export const query = new GraphQLObjectType({
         },
       },
       resolve: async (_source, { id: userId }, context: GraphQLContext) => {
-        return context.loaders.users.load(userId);
+        return context.loaders.users.load(userId as string);
       },
     },
   }),

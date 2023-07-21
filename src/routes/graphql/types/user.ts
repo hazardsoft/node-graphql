@@ -29,29 +29,29 @@ export const UserType: GraphQLObjectType = new GraphQLObjectType({
     profile: {
       type: ProfileType,
       description: "an user's profile",
-      resolve: async ({ id: userId }, _args, context: GraphQLContext) => {
-        return context.loaders.profilesByUser.load(userId);
+      resolve: async ({ id }, _args, context: GraphQLContext) => {
+        return context.loaders.profilesByUser.load(id as string);
       },
     },
     posts: {
       type: new GraphQLList(PostType),
       description: "an user's posts",
-      resolve: async ({ id: userId }, _args, context: GraphQLContext) => {
-        return context.loaders.postsByUser.load(userId);
+      resolve: async ({ id }, _args, context: GraphQLContext) => {
+        return context.loaders.postsByUser.load(id as string);
       },
     },
     userSubscribedTo: {
       type: new GraphQLList(UserType),
       description: 'list of users current user is subscribed to',
       resolve: async ({ id }, _args, context: GraphQLContext) => {
-        return context.loaders.userSubscribedTo.load(id);
+        return context.loaders.userSubscribedTo.load(id as string);
       },
     },
     subscribedToUser: {
       type: new GraphQLList(UserType),
       description: 'list of users subscribed to the current user',
       resolve: async ({ id }, _args, context: GraphQLContext) => {
-        return context.loaders.subscribedToUser.load(id);
+        return context.loaders.subscribedToUser.load(id as string);
       },
     },
   }),
