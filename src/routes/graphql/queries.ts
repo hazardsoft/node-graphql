@@ -96,53 +96,21 @@ export const query = new GraphQLObjectType({
           },
         });
 
-        const getSubsTo1 = (userId: string) => {
-          return users.filter((innerUser) =>
-            innerUser.subscribedToUser.some(
-              (subscription) => subscription.subscriberId === userId,
-            ),
-          );
-        };
-
-        const getSubsFrom1 = (userId: string) => {
-          return users.filter((innerUser) =>
-            innerUser.subscribedToUser.some(
-              (subscription) => subscription.authorId === userId,
-            ),
-          );
-        };
-
-        const getSubsTo2 = (userId: string) => {
-          return users.filter((innerUser) =>
-            innerUser.userSubscribedTo.some(
-              (subscription) => subscription.subscriberId === userId,
-            ),
-          );
-        };
-
-        const getSubsFrom2 = (userId: string) => {
-          return users.filter((innerUser) =>
-            innerUser.userSubscribedTo.some(
-              (subscription) => subscription.authorId === userId,
-            ),
-          );
-        };
-
         if (includeSubscribedToUser) {
           users.forEach((user) => {
-            const subsTo = getSubsTo1(user.id);
-            const subsFrom = getSubsFrom1(user.id);
-            context.loaders.subscribedToUser.prime(user.id, subsTo);
-            context.loaders.userSubscribedTo.prime(user.id, subsFrom);
+            const subscribers = users.filter((u) =>
+              u.subscribedToUser.some((sub) => sub.subscriberId === user.id),
+            );
+            context.loaders.subscribedToUser.prime(user.id, subscribers);
           });
         }
 
         if (includeUserSubscribedTo) {
           users.forEach((user) => {
-            const subsTo = getSubsTo2(user.id);
-            const subsFrom = getSubsFrom2(user.id);
-            context.loaders.subscribedToUser.prime(user.id, subsTo);
-            context.loaders.userSubscribedTo.prime(user.id, subsFrom);
+            const authors = users.filter((u) =>
+              u.userSubscribedTo.some((sub) => sub.authorId === user.id),
+            );
+            context.loaders.userSubscribedTo.prime(user.id, authors);
           });
         }
 
