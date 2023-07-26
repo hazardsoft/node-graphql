@@ -34,21 +34,21 @@ export const UserType: GraphQLObjectType = new GraphQLObjectType({
       },
     },
     posts: {
-      type: new GraphQLList(PostType),
+      type: new GraphQLNonNull(new GraphQLList(PostType)),
       description: "an user's posts",
       resolve: async ({ id }, _args, context: GraphQLContext) => {
         return context.loaders.postsByUser.load(id as string);
       },
     },
     userSubscribedTo: {
-      type: new GraphQLList(UserType),
+      type: new GraphQLNonNull(new GraphQLList(UserType)),
       description: 'list of users current user is subscribed to',
       resolve: async ({ id }, _args, context: GraphQLContext) => {
         return context.loaders.userSubscribedTo.load(id as string);
       },
     },
     subscribedToUser: {
-      type: new GraphQLList(UserType),
+      type: new GraphQLNonNull(new GraphQLList(UserType)),
       description: 'list of users subscribed to the current user',
       resolve: async ({ id }, _args, context: GraphQLContext) => {
         return context.loaders.subscribedToUser.load(id as string);

@@ -29,15 +29,15 @@ export const MemberTypeType = new GraphQLObjectType({
       description: 'id of a member type',
     },
     discount: {
-      type: GraphQLFloat,
+      type: new GraphQLNonNull(GraphQLFloat),
       description: 'percentage discount',
     },
     postsLimitPerMonth: {
-      type: GraphQLInt,
+      type: new GraphQLNonNull(GraphQLInt),
       description: 'posts limit per month',
     },
     profiles: {
-      type: new GraphQLList(ProfileType),
+      type: new GraphQLNonNull(new GraphQLList(ProfileType)),
       description: 'list of profiles associated with a member type',
       resolve: async ({ id }, _args, context: GraphQLContext) => {
         return context.loaders.profilesByMemberType.load(id as string);
