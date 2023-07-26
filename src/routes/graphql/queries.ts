@@ -27,8 +27,12 @@ export const query = new GraphQLObjectType({
           type: new GraphQLNonNull(MemberTypeIdType),
         },
       },
-      resolve: async (_source, { id: memberTypeId }, context: GraphQLContext) => {
-        return context.loaders.memberType.load(memberTypeId as string);
+      resolve: async (
+        _source,
+        { id: memberTypeId }: { id: string },
+        context: GraphQLContext,
+      ) => {
+        return context.loaders.memberType.load(memberTypeId);
       },
     },
     profiles: {
@@ -44,8 +48,12 @@ export const query = new GraphQLObjectType({
           type: new GraphQLNonNull(UUIDType),
         },
       },
-      resolve: async (_source, { id: profileId }, context: GraphQLContext) => {
-        return context.loaders.profile.load(profileId as string);
+      resolve: async (
+        _source,
+        { id: profileId }: { id: string },
+        context: GraphQLContext,
+      ) => {
+        return context.loaders.profile.load(profileId);
       },
     },
     posts: {
@@ -61,8 +69,12 @@ export const query = new GraphQLObjectType({
           type: new GraphQLNonNull(UUIDType),
         },
       },
-      resolve: async (_source, { id: postId }, context: GraphQLContext) => {
-        return context.loaders.post.load(postId as string);
+      resolve: async (
+        _source,
+        { id: postId }: { id: string },
+        context: GraphQLContext,
+      ) => {
+        return context.loaders.post.load(postId);
       },
     },
     users: {
@@ -144,8 +156,12 @@ export const query = new GraphQLObjectType({
           type: new GraphQLNonNull(UUIDType),
         },
       },
-      resolve: async (_source, { id: userId }, context: GraphQLContext) => {
-        return context.loaders.user.load(userId as string);
+      resolve: async (
+        _source,
+        { id: userId }: { id: string },
+        context: GraphQLContext,
+      ) => {
+        return context.loaders.user.load(userId);
       },
     },
   }),
