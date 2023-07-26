@@ -4,7 +4,7 @@ import {
   parseResolveInfo,
   simplifyParsedResolveInfoFragmentWithType,
 } from 'graphql-parse-resolve-info';
-import { MemberTypeId, MemberTypeType } from './types/memberType.js';
+import { MemberTypeIdType, MemberType } from './types/memberType.js';
 import { ProfileType } from './types/profile.js';
 import { UUIDType } from './types/uuid.js';
 import { PostType } from './types/post.js';
@@ -15,16 +15,16 @@ export const query = new GraphQLObjectType({
   name: 'Query',
   fields: () => ({
     memberTypes: {
-      type: new GraphQLList(MemberTypeType),
+      type: new GraphQLList(MemberType),
       resolve: async (_source, _args, context: GraphQLContext) => {
         return context.prisma.memberType.findMany();
       },
     },
     memberType: {
-      type: MemberTypeType,
+      type: MemberType,
       args: {
         id: {
-          type: new GraphQLNonNull(MemberTypeId),
+          type: new GraphQLNonNull(MemberTypeIdType),
         },
       },
       resolve: async (_source, { id: memberTypeId }, context: GraphQLContext) => {
