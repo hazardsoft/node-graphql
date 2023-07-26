@@ -31,7 +31,7 @@ export const UserType: GraphQLObjectType<UserBody, GraphQLContext> =
         type: ProfileType,
         description: "an user's profile",
         resolve: async ({ id }, _args, context: GraphQLContext) => {
-          return context.loaders.profilesByUser.load(id);
+          return context.loaders.profileByUser.load(id);
         },
       },
       posts: {

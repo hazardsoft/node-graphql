@@ -1,202 +1,150 @@
-import { PrismaClient, Profile, User, MemberType, Post } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import DataLoader from 'dataloader';
+import { MemberTypeBody, PostBody, ProfileBody, UserBody } from './types.js';
 
-export type Loaders = {
-  users: DataLoader<string, User | undefined>;
-  profiles: DataLoader<string, Profile | undefined>;
-  profilesByUser: DataLoader<string, Profile | undefined>;
-  profilesByMemberType: DataLoader<string, Profile | undefined>;
-  posts: DataLoader<string, Post | undefined>;
-  postsByUser: DataLoader<string, Post[]>;
-  memberTypes: DataLoader<string, MemberType | undefined>;
-  userSubscribedTo: DataLoader<string, User[]>;
-  subscribedToUser: DataLoader<string, User[]>;
-};
-
-export default class LoadersClass {
-  constructor(private prisma: PrismaClient) {}
-
-  public createLoaders(): Loaders {
-    return {
-      users: new DataLoader(this.usersBatch),
-      profiles: new DataLoader(this.profilesBatch),
-      profilesByUser: new DataLoader(this.profilesByUserBatch),
-      posts: new DataLoader(this.postsBatch),
-      postsByUser: new DataLoader(this.postsByUserBatch),
-      memberTypes: new DataLoader(this.memberTypesBatch),
-      profilesByMemberType: new DataLoader(this.profilesByMemberTypeBatch),
-      userSubscribedTo: new DataLoader(this.userSubscribedToBatch),
-      subscribedToUser: new DataLoader(this.subscribedToUserBatch),
-    };
-  }
-
-  private usersBatch = async (userIds: ReadonlyArray<string>) => {
-    const users = await this.prisma.user.findMany({
-      where: {
-        id: {
-          in: userIds as string[],
-        },
-      },
-    });
-    const filledUsers = userIds.map((id) => {
-      return users.find((user) => user.id === id);
-    });
-    if (filledUsers.length !== userIds.length) {
-      throw new Error('users length is different to keys length');
-    }
-    return filledUsers;
-  };
-
-  private profilesBatch = async (ids: ReadonlyArray<string>) => {
-    const profiles = await this.prisma.profile.findMany({
-      where: {
-        id: {
-          in: ids as string[],
-        },
-      },
-    });
-    const filledProfiles = ids.map((id) => {
-      return profiles.find((profile) => profile.id === id);
-    });
-    if (filledProfiles.length !== ids.length) {
-      throw new Error('profiles length is different to keys length');
-    }
-    return filledProfiles;
-  };
-
-  private profilesByUserBatch = async (usersIds: ReadonlyArray<string>) => {
-    const profiles = await this.prisma.profile.findMany({
-      where: {
-        userId: {
-          in: usersIds as string[],
-        },
-      },
-    });
-    const filledProfiles = usersIds.map((userId) => {
-      return profiles.find((profile) => profile.userId === userId);
-    });
-    if (filledProfiles.length !== usersIds.length) {
-      throw new Error('profilesByUser length is different to keys length');
-    }
-    return filledProfiles;
-  };
-
-  private postsBatch = async (ids: ReadonlyArray<string>) => {
-    const posts = await this.prisma.post.findMany({
-      where: {
-        id: {
-          in: ids as string[],
-        },
-      },
-    });
-    const filledPosts = ids.map((id) => {
-      return posts.find((post) => post.id === id);
-    });
-    if (filledPosts.length !== ids.length) {
-      throw new Error('posts length is different to keys length');
-    }
-    return filledPosts;
-  };
-
-  private postsByUserBatch = async (usersIds: ReadonlyArray<string>) => {
-    const posts = await this.prisma.post.findMany({
-      where: {
-        authorId: {
-          in: usersIds as string[],
-        },
-      },
-    });
-    const filledPosts = usersIds.map((userId) => {
-      return posts.filter((post) => post.authorId === userId);
-    });
-    if (filledPosts.length !== usersIds.length) {
-      throw new Error('postsByUserLoader length is different to keys length');
-    }
-    return filledPosts;
-  };
-
-  private memberTypesBatch = async (ids: ReadonlyArray<string>) => {
-    return this.prisma.memberType.findMany({
-      where: {
-        id: {
-          in: ids as string[],
-        },
-      },
-    });
-  };
-
-  private profilesByMemberTypeBatch = async (ids: ReadonlyArray<string>) => {
-    const profiles = await this.prisma.profile.findMany({
-      where: {
-        memberTypeId: { in: ids as string[] },
-      },
-    });
-    const filledProfiles = ids.map((memberTypeId) => {
-      return profiles.find((profile) => profile.memberTypeId === memberTypeId);
-    });
-    if (filledProfiles.length !== ids.length) {
-      throw new Error('profilesByMemberType length is different to keys length');
-    }
-    return filledProfiles;
-  };
-
-  private userSubscribedToBatch = async (usersIds: ReadonlyArray<string>) => {
-    const users = await this.prisma.user.findMany({
-      where: {
-        subscribedToUser: {
-          some: {
-            subscriberId: { in: usersIds as string[] },
+export function createLoaders(prisma: PrismaClient) {
+  return {
+    user: new DataLoader<string, UserBody>(async (userIds) => {
+      const relatedUsers = await prisma.user.findMany({
+        where: {
+          id: {
+            in: [...userIds],
           },
         },
-      },
-      include: {
-        subscribedToUser: {
-          select: {
-            subscriberId: true,
+      });
+      const users: Record<string, UserBody> = {};
+      relatedUsers.forEach((u) => (users[u.id] = u));
+      return userIds.map((userId) => users[userId] ?? null);
+    }),
+    profile: new DataLoader<string, ProfileBody>(async (profileIds) => {
+      const relatedProfiles = await prisma.profile.findMany({
+        where: {
+          id: {
+            in: [...profileIds],
           },
         },
-      },
-    });
-    const filledUsers = usersIds.map((userId) => {
-      return users.filter((user) =>
-        user.subscribedToUser.some(
-          (subscription) => subscription.subscriberId === userId,
-        ),
+      });
+      const profiles: Record<string, ProfileBody> = {};
+      relatedProfiles.forEach((p) => (profiles[p.id] = p));
+      return profileIds.map((profileId) => profiles[profileId] ?? null);
+    }),
+    post: new DataLoader<string, PostBody>(async (postIds) => {
+      const relatedPosts = await prisma.post.findMany({
+        where: {
+          id: {
+            in: [...postIds],
+          },
+        },
+      });
+      const posts: Record<string, PostBody> = {};
+      relatedPosts.forEach((p) => (posts[p.id] = p));
+      return postIds.map((postId) => posts[postId] ?? null);
+    }),
+    memberType: new DataLoader<string, MemberTypeBody>(async (memberTypeIds) => {
+      const relatedMemberTypes = await prisma.memberType.findMany({
+        where: {
+          id: {
+            in: [...memberTypeIds],
+          },
+        },
+      });
+      const memberTypes: Record<string, MemberTypeBody> = {};
+      relatedMemberTypes.forEach((m) => (memberTypes[m.id] = m));
+      return memberTypeIds.map((memberTypeId) => memberTypes[memberTypeId]);
+    }),
+    profileByUser: new DataLoader<string, ProfileBody>(async (usersIds) => {
+      const relatedProfiles = await prisma.profile.findMany({
+        where: {
+          userId: {
+            in: [...usersIds],
+          },
+        },
+      });
+      const profiles: Record<string, ProfileBody> = {};
+      relatedProfiles.forEach((p) => (profiles[p.userId] = p));
+      return usersIds.map((userId) => profiles[userId] ?? null);
+    }),
+    postsByUser: new DataLoader<string, PostBody[]>(async (usersIds) => {
+      const relatedPosts = await prisma.post.findMany({
+        where: {
+          authorId: {
+            in: [...usersIds],
+          },
+        },
+      });
+      const posts: Record<string, PostBody[]> = {};
+      relatedPosts.forEach((p) =>
+        posts[p.authorId] ? posts[p.authorId].push(p) : (posts[p.authorId] = [p]),
       );
-    });
-    if (filledUsers.length !== usersIds.length) {
-      throw new Error('userSubscribedTo length is different to keys length');
-    }
-    return filledUsers;
-  };
-
-  private subscribedToUserBatch = async (usersIds: ReadonlyArray<string>) => {
-    const users = await this.prisma.user.findMany({
-      where: {
-        userSubscribedTo: {
-          some: {
-            authorId: {
-              in: usersIds as string[],
+      return usersIds.map((userId) => posts[userId] ?? []);
+    }),
+    profilesByMemberType: new DataLoader<string, ProfileBody[]>(
+      async (memberTypesIds) => {
+        const relatedProfiles = await prisma.profile.findMany({
+          where: {
+            memberTypeId: {
+              in: [...memberTypesIds],
+            },
+          },
+        });
+        const profiles: Record<string, ProfileBody[]> = {};
+        relatedProfiles.forEach((p) =>
+          profiles[p.memberTypeId]
+            ? profiles[p.memberTypeId].push(p)
+            : (profiles[p.memberTypeId] = [p]),
+        );
+        return memberTypesIds.map((memberTypeId) => profiles[memberTypeId] ?? []);
+      },
+    ),
+    userSubscribedTo: new DataLoader<string, UserBody[]>(async (subscribersIds) => {
+      const relatedUsers = await prisma.user.findMany({
+        where: {
+          subscribedToUser: {
+            some: {
+              subscriberId: {
+                in: [...subscribersIds],
+              },
             },
           },
         },
-      },
-      include: {
-        userSubscribedTo: {
-          select: {
-            authorId: true,
+        include: {
+          subscribedToUser: {
+            select: {
+              subscriberId: true,
+            },
           },
         },
-      },
-    });
-    const filledUsers = usersIds.map((userId) => {
-      return users.filter((user) =>
-        user.userSubscribedTo.some((subscription) => subscription.authorId === userId),
-      );
-    });
-    if (filledUsers.length !== usersIds.length) {
-      throw new Error('subscribedToUser length is different to keys length');
-    }
-    return filledUsers;
+      });
+      return subscribersIds.map((subscriberId) => {
+        return relatedUsers.filter((user) => {
+          return user.subscribedToUser.some((sub) => sub.subscriberId === subscriberId);
+        });
+      });
+    }),
+    subscribedToUser: new DataLoader<string, UserBody[]>(async (authorsIds) => {
+      const relatedUsers = await prisma.user.findMany({
+        where: {
+          userSubscribedTo: {
+            some: {
+              authorId: {
+                in: [...authorsIds],
+              },
+            },
+          },
+        },
+        include: {
+          userSubscribedTo: {
+            select: {
+              authorId: true,
+            },
+          },
+        },
+      });
+      return authorsIds.map((authorId) => {
+        return relatedUsers.filter((user) => {
+          return user.userSubscribedTo.some((sub) => sub.authorId === authorId);
+        });
+      });
+    }),
   };
 }

@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { Loaders } from './loaders.js';
+import { createLoaders } from './loaders.js';
 import { memberTypeSchema } from '../member-types/schemas.js';
 import { Static } from '@sinclair/typebox';
 import { postSchema } from '../posts/schemas.js';
@@ -9,7 +9,7 @@ import { subscriptionSchema } from '../users/schemas.js';
 
 export type GraphQLContext = {
   prisma: PrismaClient;
-  loaders: Loaders;
+  loaders: ReturnType<typeof createLoaders>;
 };
 
 export type MemberTypeBody = Static<typeof memberTypeSchema>;

@@ -45,7 +45,7 @@ export const ProfileType: GraphQLObjectType<ProfileBody, GraphQLContext> =
         type: new GraphQLNonNull(MemberType),
         description: 'member type of an user (relation to MemberType)',
         resolve: async ({ memberTypeId }, _args, context: GraphQLContext) => {
-          return context.loaders.memberTypes.load(memberTypeId);
+          return context.loaders.memberType.load(memberTypeId);
         },
       },
       memberTypeId: {
