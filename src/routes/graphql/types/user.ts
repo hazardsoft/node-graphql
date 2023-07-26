@@ -9,53 +9,54 @@ import {
 import { UUIDType } from './uuid.js';
 import { ProfileType } from './profile.js';
 import { PostType } from './post.js';
-import { GraphQLContext } from '../context.js';
+import { GraphQLContext, UserBody } from '../types.js';
 
-export const UserType: GraphQLObjectType = new GraphQLObjectType({
-  name: 'User',
-  fields: () => ({
-    id: {
-      type: new GraphQLNonNull(UUIDType),
-      description: 'id of an user',
-    },
-    name: {
-      type: new GraphQLNonNull(GraphQLString),
-      description: 'name of an user',
-    },
-    balance: {
-      type: new GraphQLNonNull(GraphQLFloat),
-      description: 'balance of an user',
-    },
-    profile: {
-      type: ProfileType,
-      description: "an user's profile",
-      resolve: async ({ id }, _args, context: GraphQLContext) => {
-        return context.loaders.profilesByUser.load(id as string);
+export const UserType: GraphQLObjectType<UserBody, GraphQLContext> =
+  new GraphQLObjectType<UserBody, GraphQLContext>({
+    name: 'User',
+    fields: () => ({
+      id: {
+        type: new GraphQLNonNull(UUIDType),
+        description: 'id of an user',
       },
-    },
-    posts: {
-      type: new GraphQLNonNull(new GraphQLList(PostType)),
-      description: "an user's posts",
-      resolve: async ({ id }, _args, context: GraphQLContext) => {
-        return context.loaders.postsByUser.load(id as string);
+      name: {
+        type: new GraphQLNonNull(GraphQLString),
+        description: 'name of an user',
       },
-    },
-    userSubscribedTo: {
-      type: new GraphQLNonNull(new GraphQLList(UserType)),
-      description: 'list of users current user is subscribed to',
-      resolve: async ({ id }, _args, context: GraphQLContext) => {
-        return context.loaders.userSubscribedTo.load(id as string);
+      balance: {
+        type: new GraphQLNonNull(GraphQLFloat),
+        description: 'balance of an user',
       },
-    },
-    subscribedToUser: {
-      type: new GraphQLNonNull(new GraphQLList(UserType)),
-      description: 'list of users subscribed to the current user',
-      resolve: async ({ id }, _args, context: GraphQLContext) => {
-        return context.loaders.subscribedToUser.load(id as string);
+      profile: {
+        type: ProfileType,
+        description: "an user's profile",
+        resolve: async ({ id }, _args, context: GraphQLContext) => {
+          return context.loaders.profilesByUser.load(id);
+        },
       },
-    },
-  }),
-});
+      posts: {
+        type: new GraphQLNonNull(new GraphQLList(PostType)),
+        description: "an user's posts",
+        resolve: async ({ id }, _args, context: GraphQLContext) => {
+          return context.loaders.postsByUser.load(id);
+        },
+      },
+      userSubscribedTo: {
+        type: new GraphQLNonNull(new GraphQLList(UserType)),
+        description: 'list of users current user is subscribed to',
+        resolve: async ({ id }, _args, context: GraphQLContext) => {
+          return context.loaders.userSubscribedTo.load(id);
+        },
+      },
+      subscribedToUser: {
+        type: new GraphQLNonNull(new GraphQLList(UserType)),
+        description: 'list of users subscribed to the current user',
+        resolve: async ({ id }, _args, context: GraphQLContext) => {
+          return context.loaders.subscribedToUser.load(id);
+        },
+      },
+    }),
+  });
 
 export interface CreateUserArgs {
   dto: {

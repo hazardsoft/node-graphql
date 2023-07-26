@@ -1,9 +1,12 @@
 import { GraphQLNonNull, GraphQLObjectType } from 'graphql';
 import { UUIDType } from './uuid.js';
 import { UserType } from './user.js';
-import { GraphQLContext } from '../context.js';
+import { GraphQLContext, SubscriptionsBody } from '../types.js';
 
-export const SubscribersOnAuthorsType = new GraphQLObjectType({
+export const SubscribersOnAuthorsType = new GraphQLObjectType<
+  SubscriptionsBody,
+  GraphQLContext
+>({
   name: 'SubscribersOnAuthors',
   fields: () => ({
     subscriber: {
@@ -11,7 +14,7 @@ export const SubscribersOnAuthorsType = new GraphQLObjectType({
       description: 'subscriber profile (relation to User)',
       resolve: async ({ subscriberId }, _args, context: GraphQLContext) => {
         return context.prisma.user.findUnique({
-          where: { id: subscriberId as string },
+          where: { id: subscriberId },
         });
       },
     },
@@ -24,7 +27,7 @@ export const SubscribersOnAuthorsType = new GraphQLObjectType({
       description: 'author profile (relation to User)',
       resolve: async ({ authorId }, _args, context: GraphQLContext) => {
         return context.prisma.user.findUnique({
-          where: { id: authorId as string },
+          where: { id: authorId },
         });
       },
     },

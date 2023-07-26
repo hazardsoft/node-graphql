@@ -21,7 +21,7 @@ import {
   CreateUserInput,
   UserType,
 } from './types/user.js';
-import { GraphQLContext } from './context.js';
+import { GraphQLContext } from './types.js';
 
 export const mutation = new GraphQLObjectType({
   name: 'Mutation',

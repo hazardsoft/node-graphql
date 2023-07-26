@@ -9,7 +9,7 @@ import { ProfileType } from './types/profile.js';
 import { UUIDType } from './types/uuid.js';
 import { PostType } from './types/post.js';
 import { UserType } from './types/user.js';
-import { GraphQLContext } from './context.js';
+import { GraphQLContext } from './types.js';
 
 export const query = new GraphQLObjectType({
   name: 'Query',

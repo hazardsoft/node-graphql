@@ -5,7 +5,7 @@ import { schema } from './schemas.js';
 import { config } from './config.js';
 import depthLimit from 'graphql-depth-limit';
 import LoadersClass from './loaders.js';
-import { GraphQLContext } from './context.js';
+import { GraphQLContext } from './types.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { prisma } = fastify;

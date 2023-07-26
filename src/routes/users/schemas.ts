@@ -8,8 +8,21 @@ export const userFields = {
   balance: Type.Number(),
 };
 
+export const subscriptionFields = {
+  subscriberId: Type.String({
+    format: 'uuid',
+  }),
+  authorId: Type.String({
+    format: 'uuid',
+  }),
+};
+
 export const userSchema = Type.Object({
   ...userFields,
+});
+
+export const subscriptionSchema = Type.Object({
+  ...subscriptionFields,
 });
 
 export const getUserByIdSchema = {

@@ -8,51 +8,52 @@ import {
 import { UUIDType } from './uuid.js';
 import { MemberTypeIdType, MemberType } from './memberType.js';
 import { UserType } from './user.js';
-import { GraphQLContext } from '../context.js';
+import { GraphQLContext, ProfileBody } from '../types.js';
 
-export const ProfileType: GraphQLObjectType = new GraphQLObjectType({
-  name: 'Profile',
-  fields: () => ({
-    id: {
-      type: new GraphQLNonNull(UUIDType),
-      description: 'id of a profile',
-    },
-    isMale: {
-      type: new GraphQLNonNull(GraphQLBoolean),
-      description: 'if an user is a male',
-    },
-    yearOfBirth: {
-      type: new GraphQLNonNull(GraphQLInt),
-      description: 'an user birth year',
-    },
-    user: {
-      type: new GraphQLNonNull(UserType),
-      description: 'an user (relation to User)',
-      resolve: async ({ userId }, _args, context: GraphQLContext) => {
-        return context.prisma.user.findUnique({
-          where: {
-            id: userId as string,
-          },
-        });
+export const ProfileType: GraphQLObjectType<ProfileBody, GraphQLContext> =
+  new GraphQLObjectType<ProfileBody, GraphQLContext>({
+    name: 'Profile',
+    fields: () => ({
+      id: {
+        type: new GraphQLNonNull(UUIDType),
+        description: 'id of a profile',
       },
-    },
-    userId: {
-      type: new GraphQLNonNull(UUIDType),
-      description: 'id of an user (relation to User)',
-    },
-    memberType: {
-      type: new GraphQLNonNull(MemberType),
-      description: 'member type of an user (relation to MemberType)',
-      resolve: async ({ memberTypeId }, _args, context: GraphQLContext) => {
-        return context.loaders.memberTypes.load(memberTypeId as string);
+      isMale: {
+        type: new GraphQLNonNull(GraphQLBoolean),
+        description: 'if an user is a male',
       },
-    },
-    memberTypeId: {
-      type: new GraphQLNonNull(MemberTypeIdType),
-      description: 'id of a member type (relation to MemberType)',
-    },
-  }),
-});
+      yearOfBirth: {
+        type: new GraphQLNonNull(GraphQLInt),
+        description: 'an user birth year',
+      },
+      user: {
+        type: new GraphQLNonNull(UserType),
+        description: 'an user (relation to User)',
+        resolve: async ({ userId }, _args, context: GraphQLContext) => {
+          return context.prisma.user.findUnique({
+            where: {
+              id: userId,
+            },
+          });
+        },
+      },
+      userId: {
+        type: new GraphQLNonNull(UUIDType),
+        description: 'id of an user (relation to User)',
+      },
+      memberType: {
+        type: new GraphQLNonNull(MemberType),
+        description: 'member type of an user (relation to MemberType)',
+        resolve: async ({ memberTypeId }, _args, context: GraphQLContext) => {
+          return context.loaders.memberTypes.load(memberTypeId);
+        },
+      },
+      memberTypeId: {
+        type: new GraphQLNonNull(MemberTypeIdType),
+        description: 'id of a member type (relation to MemberType)',
+      },
+    }),
+  });
 
 export interface CreateProfileArgs {
   dto: {
