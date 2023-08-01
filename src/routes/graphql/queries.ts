@@ -4,31 +4,35 @@ import {
   parseResolveInfo,
   simplifyParsedResolveInfoFragmentWithType,
 } from 'graphql-parse-resolve-info';
-import { MemberTypeId, MemberTypeType } from './types/memberType.js';
+import { MemberTypeIdType, MemberType } from './types/memberType.js';
 import { ProfileType } from './types/profile.js';
 import { UUIDType } from './types/uuid.js';
 import { PostType } from './types/post.js';
 import { UserType } from './types/user.js';
-import { GraphQLContext } from './context.js';
+import { GraphQLContext } from './types.js';
 
 export const query = new GraphQLObjectType({
   name: 'Query',
   fields: () => ({
     memberTypes: {
-      type: new GraphQLList(MemberTypeType),
+      type: new GraphQLList(MemberType),
       resolve: async (_source, _args, context: GraphQLContext) => {
         return context.prisma.memberType.findMany();
       },
     },
     memberType: {
-      type: MemberTypeType,
+      type: MemberType,
       args: {
         id: {
-          type: new GraphQLNonNull(MemberTypeId),
+          type: new GraphQLNonNull(MemberTypeIdType),
         },
       },
-      resolve: async (_source, { id: memberTypeId }, context: GraphQLContext) => {
-        return context.loaders.memberTypes.load(memberTypeId as string);
+      resolve: async (
+        _source,
+        { id: memberTypeId }: { id: string },
+        context: GraphQLContext,
+      ) => {
+        return context.loaders.memberType.load(memberTypeId);
       },
     },
     profiles: {
@@ -44,8 +48,12 @@ export const query = new GraphQLObjectType({
           type: new GraphQLNonNull(UUIDType),
         },
       },
-      resolve: async (_source, { id: profileId }, context: GraphQLContext) => {
-        return context.loaders.profiles.load(profileId as string);
+      resolve: async (
+        _source,
+        { id: profileId }: { id: string },
+        context: GraphQLContext,
+      ) => {
+        return context.loaders.profile.load(profileId);
       },
     },
     posts: {
@@ -61,8 +69,12 @@ export const query = new GraphQLObjectType({
           type: new GraphQLNonNull(UUIDType),
         },
       },
-      resolve: async (_source, { id: postId }, context: GraphQLContext) => {
-        return context.loaders.posts.load(postId as string);
+      resolve: async (
+        _source,
+        { id: postId }: { id: string },
+        context: GraphQLContext,
+      ) => {
+        return context.loaders.post.load(postId);
       },
     },
     users: {
@@ -84,53 +96,21 @@ export const query = new GraphQLObjectType({
           },
         });
 
-        const getSubsTo1 = (userId: string) => {
-          return users.filter((innerUser) =>
-            innerUser.subscribedToUser.some(
-              (subscription) => subscription.subscriberId === userId,
-            ),
-          );
-        };
-
-        const getSubsFrom1 = (userId: string) => {
-          return users.filter((innerUser) =>
-            innerUser.subscribedToUser.some(
-              (subscription) => subscription.authorId === userId,
-            ),
-          );
-        };
-
-        const getSubsTo2 = (userId: string) => {
-          return users.filter((innerUser) =>
-            innerUser.userSubscribedTo.some(
-              (subscription) => subscription.subscriberId === userId,
-            ),
-          );
-        };
-
-        const getSubsFrom2 = (userId: string) => {
-          return users.filter((innerUser) =>
-            innerUser.userSubscribedTo.some(
-              (subscription) => subscription.authorId === userId,
-            ),
-          );
-        };
-
         if (includeSubscribedToUser) {
           users.forEach((user) => {
-            const subsTo = getSubsTo1(user.id);
-            const subsFrom = getSubsFrom1(user.id);
-            context.loaders.subscribedToUser.prime(user.id, subsTo);
-            context.loaders.userSubscribedTo.prime(user.id, subsFrom);
+            const subscribers = users.filter((u) =>
+              u.subscribedToUser.some((sub) => sub.subscriberId === user.id),
+            );
+            context.loaders.subscribedToUser.prime(user.id, subscribers);
           });
         }
 
         if (includeUserSubscribedTo) {
           users.forEach((user) => {
-            const subsTo = getSubsTo2(user.id);
-            const subsFrom = getSubsFrom2(user.id);
-            context.loaders.subscribedToUser.prime(user.id, subsTo);
-            context.loaders.userSubscribedTo.prime(user.id, subsFrom);
+            const authors = users.filter((u) =>
+              u.userSubscribedTo.some((sub) => sub.authorId === user.id),
+            );
+            context.loaders.userSubscribedTo.prime(user.id, authors);
           });
         }
 
@@ -144,8 +124,12 @@ export const query = new GraphQLObjectType({
           type: new GraphQLNonNull(UUIDType),
         },
       },
-      resolve: async (_source, { id: userId }, context: GraphQLContext) => {
-        return context.loaders.users.load(userId as string);
+      resolve: async (
+        _source,
+        { id: userId }: { id: string },
+        context: GraphQLContext,
+      ) => {
+        return context.loaders.user.load(userId);
       },
     },
   }),

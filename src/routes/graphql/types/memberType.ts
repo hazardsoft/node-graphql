@@ -7,41 +7,43 @@ import {
   GraphQLObjectType,
 } from 'graphql';
 import { ProfileType } from './profile.js';
-import { GraphQLContext } from '../context.js';
+import { GraphQLContext, MemberTypeBody } from '../types.js';
+import { MemberTypeId } from '../../member-types/schemas.js';
 
-export const MemberTypeId = new GraphQLEnumType({
+export const MemberTypeIdType = new GraphQLEnumType({
   name: 'MemberTypeId',
   values: {
-    basic: {
-      value: 'basic',
+    [MemberTypeId.BASIC]: {
+      value: MemberTypeId.BASIC,
     },
-    business: {
-      value: 'business',
+    [MemberTypeId.BUSINESS]: {
+      value: MemberTypeId.BUSINESS,
     },
   },
 });
 
-export const MemberTypeType = new GraphQLObjectType({
-  name: 'MemberType',
-  fields: () => ({
-    id: {
-      type: new GraphQLNonNull(MemberTypeId),
-      description: 'id of a member type',
-    },
-    discount: {
-      type: GraphQLFloat,
-      description: 'percentage discount',
-    },
-    postsLimitPerMonth: {
-      type: GraphQLInt,
-      description: 'posts limit per month',
-    },
-    profiles: {
-      type: new GraphQLList(ProfileType),
-      description: 'list of profiles associated with a member type',
-      resolve: async ({ id }, _args, context: GraphQLContext) => {
-        return context.loaders.profilesByMemberType.load(id as string);
+export const MemberType: GraphQLObjectType<MemberTypeBody, GraphQLContext> =
+  new GraphQLObjectType<MemberTypeBody, GraphQLContext>({
+    name: 'MemberType',
+    fields: () => ({
+      id: {
+        type: new GraphQLNonNull(MemberTypeIdType),
+        description: 'id of a member type',
       },
-    },
-  }),
-});
+      discount: {
+        type: new GraphQLNonNull(GraphQLFloat),
+        description: 'percentage discount',
+      },
+      postsLimitPerMonth: {
+        type: new GraphQLNonNull(GraphQLInt),
+        description: 'posts limit per month',
+      },
+      profiles: {
+        type: new GraphQLNonNull(new GraphQLList(ProfileType)),
+        description: 'list of profiles associated with a member type',
+        resolve: async ({ id }, _args, context: GraphQLContext) => {
+          return context.loaders.profilesByMemberType.load(id);
+        },
+      },
+    }),
+  });
